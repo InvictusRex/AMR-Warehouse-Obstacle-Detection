@@ -4,8 +4,6 @@ This repository contains a vision-based system designed to improve navigation ef
 
 The primary objective is not robot navigation or localization, but **lane availability awareness**. By detecting obstacles at the infrastructure level and sharing lane states with the AMR fleet manager, robots can make better routing decisions without increasing onboard computational complexity.
 
----
-
 ## System Overview
 
 Warehouses typically have predefined navigation lanes between shelves and along outer aisles. While these lanes are usually clear, operational realities such as fallen boxes can temporarily block them, leading to inefficient rerouting or unsafe conditions if not handled properly.
@@ -13,8 +11,6 @@ Warehouses typically have predefined navigation lanes between shelves and along 
 This system observes those lanes using static cameras installed on warehouse walls. Since the cameras do not move and the environment is largely structured, the perception problem becomes significantly simpler and more robust. The system detects box obstacles on the warehouse floor and determines whether a lane should be marked as FREE or BLOCKED until the obstruction is removed.
 
 The output of the system is a continuous stream of lane state updates that can be consumed by an AMR fleet manager, global planner, or traffic control module.
-
----
 
 ## Camera Views and Lane Layout
 
@@ -39,8 +35,6 @@ These views are used to define static lane regions of interest (ROIs) and to mon
 
 ![Camera View 4](Camera%20Angles/Camera_04.jpg)
 
----
-
 ## Perception Pipeline
 
 Each camera feed is processed independently through a vision pipeline built around a YOLO-based object detector. The detector is trained to recognize a single class of interest: boxes that may obstruct robot movement.
@@ -48,8 +42,6 @@ Each camera feed is processed independently through a vision pipeline built arou
 Before runtime, the valid navigation lanes visible to each camera are defined as static polygonal regions of interest (ROIs). These lane definitions are stored as configuration files and loaded during execution. Because the cameras are fixed, these ROIs remain constant over time and do not require online calibration.
 
 During operation, each incoming frame is passed through the YOLO model to detect boxes. For every detected box, the system checks whether it intersects with any lane ROI. A box is considered relevant only if it lies sufficiently within the lane region, which helps avoid false detections from shelf-level boxes or nearby clutter.
-
----
 
 ## Temporal Reasoning and Lane State
 
@@ -59,15 +51,11 @@ This temporal reasoning prevents false positives caused by brief occlusions, det
 
 In scenarios where a lane is visible from multiple cameras, a safety-first fusion strategy is applied. If any camera reports the lane as blocked, the lane is treated as blocked at the system level.
 
----
-
 ## Output and Integration
 
 The system does not stream images or raw detections to robots. Instead, it publishes compact, structured lane state information that includes the lane identifier, its current state, the detected obstacle type, and a timestamp.
 
 These lane state updates are intended to integrate seamlessly with higher-level systems such as fleet managers or planners. Robots can simply avoid blocked lanes in their navigation graphs and replan paths accordingly, without needing to understand the perception details.
-
----
 
 ## Design Principles
 
